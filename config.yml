@@ -1,0 +1,11 @@
+is_debug: true
+jwt:
+  secret: q1w2e3r4t5y6
+listen:
+  type: port
+  bind_ip: 0.0.0.0
+  port: 10000
+user_service:
+  url: http://localhost:10001/api
+property_service:
+  url: http://localhost:10002/api

@@ -1,0 +1,2 @@
+time="2024-07-28T13:56:38+05:00" level=error msg="some error for test" func="app.go:9" file="main.main()"
+time="2024-07-28T13:57:15+05:00" level=fatal msg="some error for test" func="app.go:9" file="main.main()"
