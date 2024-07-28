@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/senizdegen/sdu-housing/api-gateway/internal/client/user_service"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/config"
+	"github.com/senizdegen/sdu-housing/api-gateway/internal/handlers/auth"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/cache/freecache"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/handlers/metric"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/jwt"
@@ -44,8 +46,9 @@ func main() {
 	metricHandler := metric.Handler{Logger: logger}
 	metricHandler.Register(router)
 
-	_ = router
-	_ = jwtHelper
+	userService := user_service.NewService(cfg.UserService.URL, "/users", logger)
+	authHandler := auth.Handler{JWTHelper: jwtHelper, UserService: userService, Logger: logger}
+	authHandler.Register(router)
 
 	start(router, logger, cfg)
 }

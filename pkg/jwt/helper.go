@@ -16,7 +16,8 @@ var _ Helper = &helper{}
 
 type UserClaims struct {
 	jwt.RegisteredClaims
-	Email string `json:"email"`
+	UUID string `json:"uuid"`
+	Role string `json:"role"`
 }
 
 type RT struct {
@@ -50,7 +51,8 @@ func (h *helper) GenerateAccessToken(u user_service.User) ([]byte, error) {
 			Audience:  []string{"users"},
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60)),
 		},
-		Email: u.Email,
+		UUID: u.UUID,
+		Role: u.Role,
 	}
 
 	token, err := builder.Build(claims)
