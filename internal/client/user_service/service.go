@@ -31,7 +31,6 @@ func NewService(baseURL string, resource string, logger logging.Logger) UserServ
 			Logger: logger,
 		},
 	}
-
 	return &c
 }
 
@@ -72,8 +71,8 @@ func (c *client) GetByPhoneNumberAndPassword(ctx context.Context, phoneNumber, p
 	reqCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	req = req.WithContext(reqCtx)
-
 	response, err := c.base.SendRequest(req)
+
 	if err != nil {
 		return u, fmt.Errorf("failed to send request due to error: %w", err)
 	}
@@ -82,8 +81,10 @@ func (c *client) GetByPhoneNumberAndPassword(ctx context.Context, phoneNumber, p
 		if err = json.NewDecoder(response.Body()).Decode(&u); err != nil {
 			return u, fmt.Errorf("failed to decode body due to error: %w", err)
 		}
+		c.base.Logger.Debug(response)
 		return u, nil
 	}
+
 	return u, apperror.APIError(response.Error.ErrorCode, response.Error.Message, response.Error.DeveloperMessage)
 }
 
@@ -91,7 +92,7 @@ func (c *client) GetByUUID(ctx context.Context, uuid string) (User, error) {
 	var u User
 
 	c.base.Logger.Debug("build url with resource and filter")
-	uri, err := c.base.BuildURL(fmt.Sprintf("%s%s", c.Resource, uuid), nil)
+	uri, err := c.base.BuildURL(fmt.Sprintf("%s/%s", c.Resource, uuid), nil)
 	if err != nil {
 		return u, fmt.Errorf("failed to build URL. error: %v", err)
 	}
@@ -150,13 +151,16 @@ func (c *client) Create(ctx context.Context, dto CreateUserDTO) (User, error) {
 	}
 
 	c.base.Logger.Debug("send request")
+	c.base.Logger.Debug(req.Body)
 	reqCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	req = req.WithContext(reqCtx)
 
 	response, err := c.base.SendRequest(req)
+
 	if err != nil {
+
 		return u, fmt.Errorf("failed to send request due to error %w", err)
 	}
 
@@ -170,6 +174,7 @@ func (c *client) Create(ctx context.Context, dto CreateUserDTO) (User, error) {
 
 		splitCategoryURL := strings.Split(userURL.String(), "/")
 		userUUID := splitCategoryURL[len(splitCategoryURL)-1]
+
 		u, err := c.GetByUUID(ctx, userUUID)
 		if err != nil {
 			return u, err

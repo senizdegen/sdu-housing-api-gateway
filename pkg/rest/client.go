@@ -21,6 +21,7 @@ func (c *BaseClient) SendRequest(req *http.Request) (*APIResponse, error) {
 	if c.HTTPClient == nil {
 		return nil, errors.New("no http client")
 	}
+
 	req.Header.Set("Accept", "application/json; charset=utf-8")
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 
@@ -34,7 +35,9 @@ func (c *BaseClient) SendRequest(req *http.Request) (*APIResponse, error) {
 		response: response,
 	}
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusBadRequest {
+		c.Logger.Errorf("status code: %d", response.StatusCode)
 		apiResponse.IsOk = false
+		// if an error, read body so close it
 		defer response.Body.Close()
 
 		var apiErr APIError
@@ -42,6 +45,7 @@ func (c *BaseClient) SendRequest(req *http.Request) (*APIResponse, error) {
 			apiResponse.Error = apiErr
 		}
 	}
+
 	return &apiResponse, nil
 }
 
@@ -56,6 +60,7 @@ func (c *BaseClient) BuildURL(resource string, filters []FilterOptions) (string,
 	if len(filters) > 0 {
 		q := parsedURL.Query()
 		for _, fo := range filters {
+
 			q.Set(fo.Field, fo.ToStringWF())
 		}
 		parsedURL.RawQuery = q.Encode()
