@@ -5,7 +5,7 @@ type User struct {
 	PhoneNumber string `json:"phone_number"`
 	Password    string `json:"-"`
 	Role        string `json:"role"`
-	JWTToken    string `json:"-"`
+	JWTToken    string `json:"jwt"`
 }
 
 type CreateUserDTO struct {

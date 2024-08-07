@@ -7,7 +7,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/apperror"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/client/user_service"
-	"github.com/senizdegen/sdu-housing/api-gateway/pkg/jwt"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/logging"
 )
 
@@ -19,7 +18,6 @@ const (
 type Handler struct {
 	Logger      logging.Logger
 	UserService user_service.UserService
-	JWTHelper   jwt.Helper
 }
 
 func (h *Handler) Register(router *httprouter.Router) {
@@ -46,15 +44,12 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		token = []byte(u.JWTToken)
+		h.Logger.Debug("see token: ", token)
 
 	case http.MethodPut:
 		defer r.Body.Close()
-		var rt jwt.RT
-		if err := json.NewDecoder(r.Body).Decode(&rt); err != nil {
-			return apperror.BadRequestError("failed to decode data")
-		}
-		//call update token method
 	}
+
 	w.WriteHeader(http.StatusCreated)
 	w.Write(token)
 

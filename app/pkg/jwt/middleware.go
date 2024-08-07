@@ -16,6 +16,12 @@ type contextKey string
 
 const userUUIDKey contextKey = "user_uuid"
 
+type UserClaims struct {
+	jwt.RegisteredClaims
+	UUID string `json:"uuid"`
+	Role string `json:"role"`
+}
+
 func Middleware(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger := logging.GetLogger()

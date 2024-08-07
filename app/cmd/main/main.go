@@ -15,9 +15,7 @@ import (
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/client/user_service"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/config"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/handlers/auth"
-	"github.com/senizdegen/sdu-housing/api-gateway/pkg/cache/freecache"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/handlers/metric"
-	"github.com/senizdegen/sdu-housing/api-gateway/pkg/jwt"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/logging"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/shutdown"
 )
@@ -35,19 +33,13 @@ func main() {
 	logger.Println("router intializing")
 	router := httprouter.New()
 
-	logger.Println("cache initializing")
-	refreshTokenCache := freecache.NewCacheRepo(104857600)
-
-	logger.Println("helpers initializing")
-	jwtHelper := jwt.NewHelper(refreshTokenCache, logger)
-
 	logger.Println("create and register handlers")
 
 	metricHandler := metric.Handler{Logger: logger}
 	metricHandler.Register(router)
 
 	userService := user_service.NewService(cfg.UserService.URL, "/users", logger)
-	authHandler := auth.Handler{JWTHelper: jwtHelper, UserService: userService, Logger: logger}
+	authHandler := auth.Handler{UserService: userService, Logger: logger}
 	authHandler.Register(router)
 
 	start(router, logger, cfg)
