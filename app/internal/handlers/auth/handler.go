@@ -44,7 +44,7 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		token = []byte(u.JWTToken)
-		h.Logger.Debug("see token: ", token)
+		h.Logger.Debug("see token: ", u.JWTToken)
 
 	case http.MethodPut:
 		defer r.Body.Close()
