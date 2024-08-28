@@ -12,9 +12,11 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/senizdegen/sdu-housing/api-gateway/internal/client/property_service"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/client/user_service"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/config"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/handlers/auth"
+	"github.com/senizdegen/sdu-housing/api-gateway/internal/handlers/property"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/handlers/metric"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/logging"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/shutdown"
@@ -41,6 +43,10 @@ func main() {
 	userService := user_service.NewService(cfg.UserService.URL, "/users", logger)
 	authHandler := auth.Handler{UserService: userService, Logger: logger}
 	authHandler.Register(router)
+
+	propertyService := property_service.NewService(cfg.PropertyService.URL, "/property", logger)
+	propertyHandler := property.Handler{PropertyService: propertyService, Logger: logger}
+	propertyHandler.Register(router)
 
 	start(router, logger, cfg)
 }
