@@ -42,7 +42,7 @@ func (c *client) GetAll(ctx context.Context) ([]Property, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to build URL. error: %w", err)
 	}
-	c.base.Logger.Trace("url: %s", uri)
+	c.base.Logger.Tracef("url: %s", uri)
 
 	c.base.Logger.Debug("create new request")
 	req, err := http.NewRequest(http.MethodGet, uri, nil)

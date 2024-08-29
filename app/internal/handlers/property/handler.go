@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	propertysURL = "api/property"       //getAll, create
-	propertyURL  = "api/property/:uuid" //getById update delete
+	propertysURL = "/api/property"       //getAll, create
+	propertyURL  = "/api/property/:uuid" //getById update delete
 
 )
 

@@ -45,7 +45,9 @@ func main() {
 	authHandler.Register(router)
 
 	propertyService := property_service.NewService(cfg.PropertyService.URL, "/property", logger)
+
 	propertyHandler := property.Handler{PropertyService: propertyService, Logger: logger}
+
 	propertyHandler.Register(router)
 
 	start(router, logger, cfg)
