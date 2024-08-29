@@ -151,7 +151,6 @@ func (c *client) Create(ctx context.Context, dto CreateUserDTO) (User, error) {
 	}
 
 	c.base.Logger.Debug("send request")
-	c.base.Logger.Debug(req.Body)
 	reqCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 

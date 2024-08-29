@@ -30,7 +30,6 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
 
 	var token []byte
-	var err error
 	switch r.Method {
 	case http.MethodPost:
 		defer r.Body.Close()
@@ -53,7 +52,7 @@ func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) error {
 	w.WriteHeader(http.StatusCreated)
 	w.Write(token)
 
-	return err
+	return nil
 }
 
 func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) error {
