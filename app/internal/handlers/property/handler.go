@@ -46,5 +46,20 @@ func (h *Handler) GetAllProperty(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *Handler) CreateProperty(w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set("Content-Type", "application/json")
+
+	defer r.Body.Close()
+	var dto property_service.CreatePropertyDTO
+	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
+		return apperror.BadRequestError("failed to decode data")
+	}
+	p, err := h.PropertyService.Create(r.Context(), dto)
+	if err != nil {
+		return err
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(p.UUID))
+
 	return nil
 }

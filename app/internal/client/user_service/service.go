@@ -141,7 +141,7 @@ func (c *client) Create(ctx context.Context, dto CreateUserDTO) (User, error) {
 	c.base.Logger.Debug("marshal map to bytes")
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
-		return u, fmt.Errorf("fauled to marshal dto")
+		return u, fmt.Errorf("failed to marshal dto")
 	}
 
 	c.base.Logger.Debug("create new request")
