@@ -1,4 +1,4 @@
-package auth
+package users
 
 import (
 	"encoding/json"
@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	authURL   = "/api/auth"
-	signupURL = "/api/signup"
+	authURL        = "/api/auth"
+	signupURL      = "/api/signup"
+	assignProducer = "/api/assign-producer"
 )
 
 type Handler struct {
@@ -24,6 +25,7 @@ func (h *Handler) Register(router *httprouter.Router) {
 	router.HandlerFunc(http.MethodPost, authURL, apperror.Middleware(h.Auth))
 	router.HandlerFunc(http.MethodPut, authURL, apperror.Middleware(h.Auth))
 	router.HandlerFunc(http.MethodPost, signupURL, apperror.Middleware(h.Signup))
+	router.HandlerFunc(http.MethodPost, assignProducer, apperror.Middleware(h.AssignProducerRole))
 }
 
 func (h *Handler) Auth(w http.ResponseWriter, r *http.Request) error {
@@ -68,9 +70,21 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	token := []byte(u.JWTToken)
-	w.WriteHeader(http.StatusCreated)
-	w.Write(token)
+	var response user_service.CreateUserResponse
+	response.UUID = u.UUID
+	response.JWTToken = u.JWTToken
 
+	responseBytes, err := json.Marshal(response)
+	if err != nil {
+		return err
+	}
+
+	h.Logger.Tracef("token: %s", u.JWTToken)
+	w.WriteHeader(http.StatusCreated)
+	w.Write(responseBytes)
+	return nil
+}
+
+func (h *Handler) AssignProducerRole(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }

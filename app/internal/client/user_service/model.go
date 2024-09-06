@@ -23,3 +23,8 @@ type SigninUserDTO struct {
 	PhoneNumber string `json:"phone_number"`
 	Password    string `json:"password"`
 }
+
+type CreateUserResponse struct {
+	UUID     string `json:"uuid"`
+	JWTToken string `json:"jwt"`
+}

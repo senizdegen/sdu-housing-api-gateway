@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/fatih/structs"
@@ -14,6 +13,10 @@ import (
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/logging"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/rest"
 )
+
+type token struct {
+	token string
+}
 
 type client struct {
 	base     rest.BaseClient
@@ -164,19 +167,9 @@ func (c *client) Create(ctx context.Context, dto CreateUserDTO) (User, error) {
 	}
 
 	if response.IsOk {
-		c.base.Logger.Debug("parse location header")
-		userURL, err := response.Location()
-		if err != nil {
-			return u, fmt.Errorf("failed to get Location header")
-		}
-		c.base.Logger.Tracef("Location: %s", userURL.String())
-
-		splitCategoryURL := strings.Split(userURL.String(), "/")
-		userUUID := splitCategoryURL[len(splitCategoryURL)-1]
-
-		u, err := c.GetByUUID(ctx, userUUID)
-		if err != nil {
-			return u, err
+		defer response.Body().Close()
+		if err = json.NewDecoder(response.Body()).Decode(&u); err != nil {
+			return u, fmt.Errorf("failed to decode body due to error: %w", err)
 		}
 		return u, nil
 	}

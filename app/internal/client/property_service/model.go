@@ -27,3 +27,7 @@ type CreatePropertyDTO struct {
 
 type UpdatePropertyDTO struct {
 }
+
+type CreatePropertyResponse struct {
+	UUID string `json:"uuid"`
+}

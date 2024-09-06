@@ -15,8 +15,8 @@ import (
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/client/property_service"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/client/user_service"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/config"
-	"github.com/senizdegen/sdu-housing/api-gateway/internal/handlers/auth"
 	"github.com/senizdegen/sdu-housing/api-gateway/internal/handlers/property"
+	"github.com/senizdegen/sdu-housing/api-gateway/internal/handlers/users"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/handlers/metric"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/logging"
 	"github.com/senizdegen/sdu-housing/api-gateway/pkg/shutdown"
@@ -41,8 +41,8 @@ func main() {
 	metricHandler.Register(router)
 
 	userService := user_service.NewService(cfg.UserService.URL, "/users", logger)
-	authHandler := auth.Handler{UserService: userService, Logger: logger}
-	authHandler.Register(router)
+	usersHandler := users.Handler{UserService: userService, Logger: logger}
+	usersHandler.Register(router)
 
 	propertyService := property_service.NewService(cfg.PropertyService.URL, "/property", logger)
 

@@ -37,7 +37,8 @@ func NewService(baseURL string, resource string, logger logging.Logger) Property
 
 type PropertyService interface {
 	GetAll(ctx context.Context) ([]Property, error)
-	Create(ctx context.Context, dto CreatePropertyDTO) (Property, error)
+	Create(ctx context.Context, dto CreatePropertyDTO) (string, error)
+	GetByUUID(ctx context.Context, uuid string) (Property, error)
 }
 
 func (c *client) GetAll(ctx context.Context) ([]Property, error) {
@@ -80,13 +81,47 @@ func (c *client) GetAll(ctx context.Context) ([]Property, error) {
 
 }
 
-func (c *client) Create(ctx context.Context, dto CreatePropertyDTO) (Property, error) {
-	var property Property
+func (c *client) GetByUUID(ctx context.Context, uuid string) (p Property, err error) {
+	c.base.Logger.Debug("build url with resource and filter")
+	uri, err := c.base.BuildURL(fmt.Sprintf("%s/%s", c.Resource, uuid), nil)
+	if err != nil {
+		return p, fmt.Errorf("failed to build URL. error: %w", err)
+	}
+
+	c.base.Logger.Tracef("url: %s", uri)
+
+	c.base.Logger.Debug("create new request")
+	req, err := http.NewRequest(http.MethodGet, uri, nil)
+	if err != nil {
+		return p, fmt.Errorf("failed to create new request due to error: %w", err)
+	}
+
+	c.base.Logger.Debug("send request")
+	reqCtx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+
+	req = req.WithContext(reqCtx)
+	response, err := c.base.SendRequest(req)
+	if err != nil {
+		return p, fmt.Errorf("failed to send request. error: %w", err)
+	}
+
+	if response.IsOk {
+		defer response.Body().Close()
+		if err = json.NewDecoder(response.Body()).Decode(&p); err != nil {
+			return p, fmt.Errorf("failed to decode boby due to error: %w", err)
+		}
+		return p, nil
+	}
+	return p, apperror.APIError(response.Error.ErrorCode, response.Error.Message, response.Error.DeveloperMessage)
+}
+
+func (c *client) Create(ctx context.Context, dto CreatePropertyDTO) (string, error) {
 
 	c.base.Logger.Debug("build url with resource and filter")
 	uri, err := c.base.BuildURL(c.Resource, nil)
 	if err != nil {
-		return property, fmt.Errorf("failed to build URL. error: %w", err)
+		return "", fmt.Errorf("failed to build URL. error: %w", err)
 	}
 	c.base.Logger.Tracef("url: %s", uri)
 
@@ -97,13 +132,13 @@ func (c *client) Create(ctx context.Context, dto CreatePropertyDTO) (Property, e
 	c.base.Logger.Debug("marshal dto to bytes")
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
-		return property, fmt.Errorf("failed to marshal data")
+		return "", fmt.Errorf("failed to marshal data")
 	}
 
 	c.base.Logger.Debug("create new request")
 	req, err := http.NewRequest(http.MethodPost, uri, bytes.NewBuffer(dataBytes))
 	if err != nil {
-		return property, fmt.Errorf("failed to create new request due to error: %w", err)
+		return "", fmt.Errorf("failed to create new request due to error: %w", err)
 	}
 
 	c.base.Logger.Debug("send request")
@@ -114,14 +149,14 @@ func (c *client) Create(ctx context.Context, dto CreatePropertyDTO) (Property, e
 
 	response, err := c.base.SendRequest(req)
 	if err != nil {
-		return property, fmt.Errorf("failed to send request due to error: %w", err)
+		return "", fmt.Errorf("failed to send request due to error: %w", err)
 	}
 
 	if response.IsOk {
 		c.base.Logger.Debug("parse location header")
 		propertyURL, err := response.Location()
 		if err != nil {
-			return property, fmt.Errorf("failed to get Location header")
+			return "", fmt.Errorf("failed to get Location header")
 		}
 
 		c.base.Logger.Tracef("Location: %s", propertyURL.String())
@@ -129,12 +164,7 @@ func (c *client) Create(ctx context.Context, dto CreatePropertyDTO) (Property, e
 		splitCategoryURL := strings.Split(propertyURL.String(), "/")
 		propertyUUID := splitCategoryURL[len(splitCategoryURL)-1]
 
-		_ = propertyUUID
-		// property, err := c.GetByUUID(ctx, propertyUUID)
-		// if err != nil {
-		// 	return property, err
-		// }
-		return property, nil
+		return propertyUUID, nil
 	}
-	return property, apperror.APIError(response.Error.ErrorCode, response.Error.Message, response.Error.DeveloperMessage)
+	return "", apperror.APIError(response.Error.ErrorCode, response.Error.Message, response.Error.DeveloperMessage)
 }
